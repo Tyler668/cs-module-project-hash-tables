@@ -21,6 +21,9 @@ class HashTable:
     """
 
     def __init__(self, capacity):
+        self.capacity = capacity
+        self.data = [None] * capacity
+        
         # Your code here
 
 
@@ -35,6 +38,7 @@ class HashTable:
         Implement this.
         """
         # Your code here
+        return self.capacity
 
 
     def get_load_factor(self):
@@ -46,23 +50,27 @@ class HashTable:
         # Your code here
 
 
-    def fnv1(self, key):
+    def fnv1_64(self, string, seed=0):
         """
-        FNV-1 Hash, 64-bit
-
-        Implement this, and/or DJB2.
+        Returns: The FNV-1 hash of a given string. 
         """
+        #Constants
+        FNV_prime = 1099511628211
+        offset_basis = 14695981039346656037
 
-        # Your code here
+        #FNV-1a Hash Function
+        hash = offset_basis + seed
+        for char in string:
+            hash = hash * FNV_prime
+            hash = hash ^ ord(char)
+        return hash
 
 
-    def djb2(self, key):
-        """
-        DJB2 hash, 32-bit
-
-        Implement this, and/or FNV-1.
-        """
-        # Your code here
+    def djb2(self, s):                                                                                                                                
+        hash = 5381
+        for x in s:
+            hash = (( hash << 5) + hash) + ord(x)
+        return hash & 0xFFFFFFFF
 
 
     def hash_index(self, key):
@@ -73,37 +81,27 @@ class HashTable:
         #return self.fnv1(key) % self.capacity
         return self.djb2(key) % self.capacity
 
-    def put(self, key, value):
-        """
-        Store the value with the given key.
 
-        Hash collisions should be handled with Linked List Chaining.
+    
+    def get_slot(self, s):
+        hash_val = self.djb2(s)
+        return hash_val % len(self.data)
 
-        Implement this.
-        """
-        # Your code here
-
-
-    def delete(self, key):
-        """
-        Remove the value stored with the given key.
-
-        Print a warning if the key is not found.
-
-        Implement this.
-        """
-        # Your code here
-
+    def put(self,key,value):
+        slot = self.get_slot(key)
+        self.data[slot] = HashTableEntry(key,value)
 
     def get(self, key):
-        """
-        Retrieve the value stored with the given key.
+        slot = self.get_slot(key)
+        hash_entry = self.data[slot]
+        
+        if hash_entry is not None:
+            return hash_entry.value
+        return self.data[slot].value
 
-        Returns None if the key is not found.
+    def delete(self, key):
+        self.put(key, None)
 
-        Implement this.
-        """
-        # Your code here
 
 
     def resize(self, new_capacity):
