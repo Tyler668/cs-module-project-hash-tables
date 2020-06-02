@@ -1,11 +1,57 @@
+
+
+
 class HashTableEntry:
     """
     Linked List hash table key/value pair
     """
+
     def __init__(self, key, value):
         self.key = key
         self.value = value
         self.next = None
+        self.head = None
+
+    def insert_at_head(self, node):
+        node.next = self.head
+        self.head = node
+
+    def find(self, value):
+        cur = self.head
+
+        # walk the linked list
+        while cur is not None:
+            if cur.value == value:
+                # Found it!
+                return cur
+
+            cur = cur.next
+
+        return None
+
+    def delete(self, value):
+        cur = self.head
+
+        # Special case of deleting the head of the list
+
+        if cur.value == value:
+            self.head = self.head.next
+            return cur
+
+        # General case
+
+        prev = cur
+        cur = cur.next
+
+        while cur is not None:
+            if cur.value == value:  # Delete this one
+                prev.next = cur.next   # Cuts out the old node
+                return cur
+            else:
+                prev = prev.next
+                cur = cur.next
+
+        return None
 
 
 # Hash table can't have fewer than this many slots
@@ -23,9 +69,7 @@ class HashTable:
     def __init__(self, capacity):
         self.capacity = capacity
         self.data = [None] * capacity
-        
-        # Your code here
-
+        self.entries = 0
 
     def get_num_slots(self):
         """
@@ -40,7 +84,6 @@ class HashTable:
         # Your code here
         return self.capacity
 
-
     def get_load_factor(self):
         """
         Return the load factor for this hash table.
@@ -48,69 +91,92 @@ class HashTable:
         Implement this.
         """
         # Your code here
-
+        loadFactor = self.entries / self.capacity
+        return loadFactor
 
     def fnv1_64(self, string, seed=0):
         """
         Returns: The FNV-1 hash of a given string. 
         """
-        #Constants
+        # Constants
         FNV_prime = 1099511628211
         offset_basis = 14695981039346656037
 
-        #FNV-1a Hash Function
+        # FNV-1a Hash Function
         hash = offset_basis + seed
         for char in string:
             hash = hash * FNV_prime
             hash = hash ^ ord(char)
         return hash
 
-
-    def djb2(self, s):                                                                                                                                
+    def djb2(self, s):
         hash = 5381
         for x in s:
-            hash = (( hash << 5) + hash) + ord(x)
+            hash = ((hash << 5) + hash) + ord(x)
         return hash & 0xFFFFFFFF
-
 
     def hash_index(self, key):
         """
         Take an arbitrary key and return a valid integer index
         between within the storage capacity of the hash table.
         """
-        #return self.fnv1(key) % self.capacity
+        # return self.fnv1(key) % self.capacity
         return self.djb2(key) % self.capacity
 
-
-    
     def get_slot(self, s):
         hash_val = self.djb2(s)
         return hash_val % len(self.data)
 
-    def put(self,key,value):
+    def put(self, key, value):
         slot = self.get_slot(key)
-        self.data[slot] = HashTableEntry(key,value)
+        
+        # print(f'[{value}] Slot deemed to be:', slot)
+        if self.data[slot] == None:
+            self.data[slot] = HashTableEntry(key, value)
+            self.entries +=1
+        elif self.data[slot].key == key:
+            self.data[slot].value = value
+        elif self.data[slot].key != key:
+            cur = self.data[slot]
+            while cur.next is not None:
+                cur = cur.next
+            cur.next = HashTableEntry(key, value)
+            self.entries +=1
+            
 
     def get(self, key):
         slot = self.get_slot(key)
         hash_entry = self.data[slot]
-        
-        if hash_entry is not None:
-            return hash_entry.value
-        return self.data[slot].value
+        cur = hash_entry
+        if cur: 
+            while cur.next != None:
+                if cur.key == key:
+                    return cur.value
+                else:
+                    cur = cur.next
+            return cur.value
+        return None 
+
 
     def delete(self, key):
         self.put(key, None)
-
-
+        self.entries -=1
+        
 
     def resize(self, new_capacity):
-        """
-        Changes the capacity of the hash table and
-        rehashes all key/value pairs.
 
-        Implement this.
-        """
+        self.capacity = new_capacity
+
+        newData = [None] * new_capacity
+        # print('New data:', newData)
+
+        for i in range(len(self.data)):
+            newData[i] = self.data[i]
+
+        print('NewData', newData)
+
+        self.data = newData
+        
         # Your code here
 
 
@@ -144,8 +210,16 @@ if __name__ == "__main__":
 
     print(f"\nResized from {old_capacity} to {new_capacity}.\n")
 
-    # Test if data intact after resizing
+    # # Test if data intact after resizing
+
+    # ht.delete("line_5")
     for i in range(1, 13):
         print(ht.get(f"line_{i}"))
 
     print("")
+
+    for i in ht.data:
+        print('[]',i.value)
+
+
+    print(ht.get_load_factor())
