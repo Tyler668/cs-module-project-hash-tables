@@ -125,23 +125,65 @@ class HashTable:
 
     def get_slot(self, s):
         hash_val = self.djb2(s)
-        return hash_val % len(self.data)
+        return hash_val % self.capacity # # # # # # 
 
     def put(self, key, value):
+
+
         slot = self.get_slot(key)
+        # cur = self.data[slot]
+        # if cur == None:
+        #     if self.get_load_factor() > 0.7:
+        #         self.resize(self.capacity * 2)
+
+        #     self.data[slot] = HashTableEntry(key, value)
+        #     self.entries +=1
+        # else:
+        #     while cur is not None:
+        #         if cur.key == key:
+        #             cur.value = value
+        #             return
+        #         cur = cur.next
+        #     self.entries +=1
+        #     cur = HashTableEntry(key, value)
+            
+
+
         
         # print(f'[{value}] Slot deemed to be:', slot)
         if self.data[slot] == None:
+            if self.get_load_factor() > 0.7:
+                self.resize(self.capacity * 2)
+
             self.data[slot] = HashTableEntry(key, value)
             self.entries +=1
-        elif self.data[slot].key == key:
-            self.data[slot].value = value
-        elif self.data[slot].key != key:
+        else:
             cur = self.data[slot]
-            while cur.next is not None:
-                cur = cur.next
-            cur.next = HashTableEntry(key, value)
-            self.entries +=1
+            if cur is not None and cur.next is None:
+                if cur.key == key:
+                    cur.value = value
+                else:
+                    cur.next = HashTableEntry(key, value)
+            if cur.next is not None:
+                while cur.next is not None:
+                    # print('cur.key')
+                    if cur.key == key:
+                        cur.value = value
+                        # print('putting:',cur.value)
+                    else:
+                        cur = cur.next
+            return 
+
+
+
+        # elif self.data[slot].key == key:
+        #     self.data[slot].value = value
+        # elif self.data[slot].key != key:
+        #     cur = self.data[slot]
+        #     while cur.next is not None:
+        #         cur = cur.next
+        #     cur.next = HashTableEntry(key, value)   # need to account for having a correct key later than the head, further in the LL
+        #     self.entries +=1
             
 
     def get(self, key):
@@ -165,16 +207,22 @@ class HashTable:
 
     def resize(self, new_capacity):
 
+        old_capacity = self.capacity
         self.capacity = new_capacity
-
+        
+        # print('SELFDATA',self.data)
         newData = [None] * new_capacity
         # print('New data:', newData)
+        # print('len self data', len(self.data))
 
         for i in range(len(self.data)):
+            print(self.data[i])
             newData[i] = self.data[i]
 
-        print('NewData', newData)
-
+            
+        print(f"\nResized from {old_capacity} to {new_capacity}.\n")
+        # print('NewData', newData)
+       
         self.data = newData
         
         # Your code here
@@ -199,27 +247,32 @@ if __name__ == "__main__":
 
     print("")
 
-    # Test storing beyond capacity
-    for i in range(1, 13):
-        print(ht.get(f"line_{i}"))
+    # # Test storing beyond capacity
+    # for i in range(1, 13):
+    #     print(ht.get(f"line_{i}"))
 
-    # Test resizing
-    old_capacity = ht.get_num_slots()
-    ht.resize(ht.capacity * 2)
-    new_capacity = ht.get_num_slots()
+    # # Test resizing
+    # old_capacity = ht.get_num_slots()
+    # ht.resize(ht.capacity * 2)
+    # new_capacity = ht.get_num_slots()
 
-    print(f"\nResized from {old_capacity} to {new_capacity}.\n")
+    # # print(f"\nResized from {old_capacity} to {new_capacity}.\n")
 
-    # # Test if data intact after resizing
+    # # # Test if data intact after resizing
 
-    # ht.delete("line_5")
-    for i in range(1, 13):
-        print(ht.get(f"line_{i}"))
+    
+    # for i in range(1, 13):
+    #     print(ht.get(f"line_{i}"))
 
-    print("")
+    # print("")
 
     for i in ht.data:
-        print('[]',i.value)
+       if i:
+           print(i.key, i.value)
+       else: 
+           print(i) 
+        
+    print(ht.get("line_2"))
 
 
     print(ht.get_load_factor())
