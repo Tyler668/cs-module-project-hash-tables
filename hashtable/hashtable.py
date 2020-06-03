@@ -1,6 +1,5 @@
 
 
-
 class HashTableEntry:
     """
     Linked List hash table key/value pair
@@ -113,7 +112,7 @@ class HashTable:
         hash = 5381
         for x in s:
             hash = ((hash << 5) + hash) + ord(x)
-        return hash & 0xFFFFFFFF
+        return hash
 
     def hash_index(self, key):
         """
@@ -121,83 +120,58 @@ class HashTable:
         between within the storage capacity of the hash table.
         """
         # return self.fnv1(key) % self.capacity
-        return self.djb2(key) % self.capacity
+        return self.fnv1_64(key) % self.capacity
 
     def get_slot(self, s):
-        hash_val = self.djb2(s)
+        hash_val = self.fnv1_64(s)
         return hash_val % self.capacity # # # # # # 
 
     def put(self, key, value):
 
-
         slot = self.get_slot(key)
-        # cur = self.data[slot]
-        # if cur == None:
-        #     if self.get_load_factor() > 0.7:
-        #         self.resize(self.capacity * 2)
+        cur = self.data[slot]
+        done = False
 
-        #     self.data[slot] = HashTableEntry(key, value)
-        #     self.entries +=1
-        # else:
-        #     while cur is not None:
-        #         if cur.key == key:
-        #             cur.value = value
-        #             return
-        #         cur = cur.next
-        #     self.entries +=1
-        #     cur = HashTableEntry(key, value)
-            
-
-
-        
-        # print(f'[{value}] Slot deemed to be:', slot)
-        if self.data[slot] == None:
+        if cur == None:
             if self.get_load_factor() > 0.7:
                 self.resize(self.capacity * 2)
 
             self.data[slot] = HashTableEntry(key, value)
+            done = True
             self.entries +=1
-        else:
-            cur = self.data[slot]
-            if cur is not None and cur.next is None:
-                if cur.key == key:
-                    cur.value = value
-                else:
-                    cur.next = HashTableEntry(key, value)
-            if cur.next is not None:
-                while cur.next is not None:
-                    # print('cur.key')
-                    if cur.key == key:
-                        cur.value = value
-                        # print('putting:',cur.value)
-                    else:
-                        cur = cur.next
-            return 
 
 
+        while cur is not None:
+            if cur.key == key:
+                cur.value = value
+                done = True
+                return
+            cur = cur.next
 
-        # elif self.data[slot].key == key:
-        #     self.data[slot].value = value
-        # elif self.data[slot].key != key:
-        #     cur = self.data[slot]
-        #     while cur.next is not None:
-        #         cur = cur.next
-        #     cur.next = HashTableEntry(key, value)   # need to account for having a correct key later than the head, further in the LL
-        #     self.entries +=1
+        if done == False:
+            self.data[slot].insert_at_head(HashTableEntry(key, value))
+
             
 
     def get(self, key):
         slot = self.get_slot(key)
-        hash_entry = self.data[slot]
-        cur = hash_entry
-        if cur: 
-            while cur.next != None:
-                if cur.key == key:
-                    return cur.value
-                else:
-                    cur = cur.next
-            return cur.value
-        return None 
+        cur = self.data[slot]
+        # print('Key:', key, 'Slot:', slot)
+        while cur is not None:
+            if cur.key == key:
+                return cur.value
+            else:
+                cur = cur.next
+        return None
+
+        # if cur is not None: 
+        #     while cur.next is not None:
+        #         if cur.key == key:
+        #             return cur.value
+        #         else:
+        #             cur = cur.next
+        #     # return cur.value
+        # return None 
 
 
     def delete(self, key):
@@ -207,23 +181,37 @@ class HashTable:
 
     def resize(self, new_capacity):
 
-        old_capacity = self.capacity
+        # old_capacity = self.capacity
         self.capacity = new_capacity
         
-        # print('SELFDATA',self.data)
-        newData = [None] * new_capacity
-        # print('New data:', newData)
-        # print('len self data', len(self.data))
 
-        for i in range(len(self.data)):
-            print(self.data[i])
-            newData[i] = self.data[i]
+        newHashTable = HashTable(new_capacity)
+
+        for i in self.data:
+            if i is not None:
+                newHashTable.put(i.key, i.value)
+
+
+        self.data = newHashTable.data
+        # self.data = copy.deepcopy(newHashTable.data)
+
+        # # print('SELFDATA',self.data)
+        # newData = [None] * new_capacity
+        # # print('New data:', newData)
+        # # print('len self data', len(self.data))
+
+        # for i in range(len(self.data)):
+        #     # print('Going into new table [',self.data[i],']')
+        #     newData[i] = self.data[i]
+
 
             
-        print(f"\nResized from {old_capacity} to {new_capacity}.\n")
-        # print('NewData', newData)
+
+            
+        # print(f"\nResized from {old_capacity} to {new_capacity}.\n")
+        # # print('NewData', newData)
        
-        self.data = newData
+        # self.data = newData
         
         # Your code here
 
@@ -266,13 +254,15 @@ if __name__ == "__main__":
 
     # print("")
 
+    # ht.resize(ht.capacity * 2)
+
     for i in ht.data:
        if i:
-           print(i.key, i.value)
+           print(i.key, i.value, i.next)
        else: 
            print(i) 
         
-    print(ht.get("line_2"))
+    print(ht.get("line_1"))
 
 
     print(ht.get_load_factor())
