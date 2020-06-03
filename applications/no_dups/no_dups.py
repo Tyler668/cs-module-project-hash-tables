@@ -1,5 +1,18 @@
+
 def no_dups(s):
-    # Your code here
+
+    s = s.split()
+    s = list(dict.fromkeys(s))
+
+    fixed = ''
+    for i in range(len(s)):
+        if i < len(s) - 1:
+            fixed += s[i] + " "
+        else:
+            fixed += s[i]
+
+    return fixed
+        
 
 
 

@@ -1,0 +1,2 @@
+    # words = f.read()
+    # wordArray = []
