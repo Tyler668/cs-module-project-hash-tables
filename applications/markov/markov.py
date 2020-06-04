@@ -1,58 +1,57 @@
 import random
 # Key: [followup1, followup2, followup3]
-# Read in all the words in one go
+# Read in all the wordArray in one go
 
-# uniqueWords = {
+# uniqueWordArray = {
 #     "Hello": ['there', 'tyler', '?']
 # }
 
 
+ignored = {
+    '"', ':', ';', ',', '.', '-', '+', '=', '/', '\\', "|", '[', ']', '{', '}', '(', ')', '*', '^', '&'
+}
+
+
 def nextWord(word):
-    return random.choice(list(uniqueWords.keys()))
+    return random.choice(list(uniqueWordArray.keys()))
 
 
 with open("C:\\Users\\tyler\\Documents\\github\\cs-module-project-hash-tables\\applications\\markov\\input.txt") as f:
-    # words = f.read()
-    wordArray = {}
+    wordArray = []
     for line in f:
         line = line.split()
         for word in line:
-            wordArray[word] = word
-    print(wordArray)
-        
-    print(wordArray)
+            for char in word:
+                if char in ignored:
+                    word = word.replace(char, '')
+
+            wordArray.append(word)
+    
 
         
-    # words = words.split()
-    # print(words)
-    # uniqueWords = {}
 
-    # for i in range(len(words) - 1):
-    #     if words[i] not in uniqueWords:
-    #         uniqueWords[words[i]] = [words[i+1]]
-    #     else:
-    #         uniqueWords[words[i]].append(words[i + 1])
-    # # print(uniqueWords)
+    uniqueWordArray = {}
 
-    # sentence = ''
-    # for i in range(15):
-    #     word = random.choice(list(uniqueWords.keys()))
-    #     sentence += word + " "
-    #     word = nextWord(word)
+    for i in range(len(wordArray) - 1):
+        if wordArray[i] not in uniqueWordArray:
+            uniqueWordArray[wordArray[i]] = [wordArray[i+1]]
+        else:
+            uniqueWordArray[wordArray[i]].append(wordArray[i + 1])
 
-    # sentence[0].upper()
-    # sentence[len(sentence)] = '.'
+    # print(uniqueWordArray)
 
-    # print(sentence)
+    sentence = ''
+    for i in range(15):
+        word = random.choice(list(uniqueWordArray.keys()))
+        if i == 0:
+            word = word.capitalize()
+        sentence += ' ' + word
+        word = nextWord(word)
 
+    sentence = sentence + '.'
+    # sentence.append('.')
 
-
-# TODO: analyze which words can follow other words
-# Your code here
-
-
-# TODO: construct 5 random sentences
-# Your code here
+    print(sentence)
 
 
 
