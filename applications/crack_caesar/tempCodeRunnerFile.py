@@ -1,0 +1,6 @@
+    # string = string.lower()
+    # string = string.replace(' ', '')
+    # string = string.replace(',', '')
+    # # string = string.replace(ignored, '')
+    # string = string.replace('.', '')
+    # string = string.replace("'", '')
